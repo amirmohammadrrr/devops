@@ -1,43 +1,112 @@
-name: snowflake-devops-demo
+name: Deploy Binary Database
 
-# Controls when the action will run. 
 on:
   push:
+    branches:
+      - '**'
+    paths:
+      - 'binary/**'
+  pull_request:
     branches:
       - main
     paths:
       - 'binary/**'
-
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 jobs:
-  deploy-snowflake-changes-job:
+  deploy-dev:
+    if: github.event_name == 'push' && github.ref != 'refs/heads/main'
     runs-on: ubuntu-latest
-
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Use Python 3.8.x
-        uses: actions/setup-python@v2.2.1
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
         with:
-          python-version: 3.8.x
-
-      - name: Run schemachange
+          python-version: 3.8
+      
+      - name: Deploy to DEV_RAW_BINARY
         env:
-          SF_ACCOUNT: ${{ secrets.SF_ACCOUNT }}
-          SF_USERNAME: ${{ secrets.SF_USERNAME }}
+          SF_ACCOUNT: ${{ secrets.SF_ACCOUNT_DEV }}
+          SF_USERNAME: ${{ secrets.SF_USERNAME_DEV }}
+          SF_PASSWORD: ${{ secrets.SF_PASSWORD_DEV }}
           SF_ROLE: ${{ secrets.SF_ROLE }}
           SF_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
-          SF_DATABASE: ${{ secrets.SF_DATABASE }}
-          SNOWFLAKE_PASSWORD: ${{ secrets.SF_PASSWORD }}
+          SF_DATABASE: DEV_RAW_BINARY  
         run: |
-          echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
-          python --version
-          echo "Step 1: Installing schemachange"
+          echo "🚀 Deploying to $SF_DATABASE"
           pip install schemachange
           
-          echo "Step 2: Running schemachange"
-          schemachange deploy -f $GITHUB_WORKSPACE/binary -a $SF_ACCOUNT -u $SF_USERNAME -r $SF_ROLE -w $SF_WAREHOUSE -d $SF_DATABASE -c $SF_DATABASE.SCHEMACHANGE.CHANGE_HISTORY --create-change-history-table
+          schemachange -f binary \
+            -a $SF_ACCOUNT \
+            -u $SF_USERNAME \
+            -r $SF_ROLE \
+            -w $SF_WAREHOUSE \
+            -d $SF_DATABASE \
+            -c $SF_DATABASE.SCHEMACHANGE.CHANGE_HISTORY \
+            --create-change-history-table
+          
+          echo "✅ Deployed to $SF_DATABASE"
+
+  deploy-qa:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      
+      - name: Deploy to QA_RAW_BINARY
+        env:
+          SF_ACCOUNT: ${{ secrets.SF_ACCOUNT_DEV }}
+          SF_USERNAME: ${{ secrets.SF_USERNAME_DEV }}
+          SF_PASSWORD: ${{ secrets.SF_PASSWORD_DEV }}
+          SF_ROLE: ${{ secrets.SF_ROLE }}
+          SF_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
+          SF_DATABASE: QA_RAW_BINARY  # ← Specific to this workflow
+        run: |
+          echo "🧪 Deploying to $SF_DATABASE"
+          pip install schemachange
+          
+          schemachange -f binary \
+            -a $SF_ACCOUNT \
+            -u $SF_USERNAME \
+            -r $SF_ROLE \
+            -w $SF_WAREHOUSE \
+            -d $SF_DATABASE \
+            -c $SF_DATABASE.SCHEMACHANGE.CHANGE_HISTORY \
+            --create-change-history-table
+          
+          echo "✅ Deployed to $SF_DATABASE"
+
+  deploy-prod:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: PROD
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      
+      - name: Deploy to PROD_RAW_BINARY
+        env:
+          SF_ACCOUNT: ${{ secrets.SF_ACCOUNT_PROD }}
+          SF_USERNAME: ${{ secrets.SF_USERNAME_PROD }}
+          SF_PASSWORD: ${{ secrets.SF_PASSWORD_PROD }}
+          SF_ROLE: ${{ secrets.SF_ROLE }}
+          SF_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
+          SF_DATABASE: PROD_RAW_BINARY  # ← Specific to this workflow
+        run: |
+          echo "🚀 Deploying to $SF_DATABASE"
+          pip install schemachange
+          
+          schemachange -f binary \
+            -a $SF_ACCOUNT \
+            -u $SF_USERNAME \
+            -r $SF_ROLE \
+            -w $SF_WAREHOUSE \
+            -d $SF_DATABASE \
+            -c $SF_DATABASE.SCHEMACHANGE.CHANGE_HISTORY \
+            --create-change-history-table
+          
+          echo "✅ Deployed to $SF_DATABASE"
