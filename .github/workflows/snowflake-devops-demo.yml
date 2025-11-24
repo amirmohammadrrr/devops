@@ -26,15 +26,15 @@ jobs:
         env:
           SNOWFLAKE_ACCOUNT: ${{ secrets.SF_ACCOUNT_DEV }}
           SNOWFLAKE_USER: ${{ secrets.SF_USERNAME_DEV }}
-          SNOWFLAKE_PASSWORD: ${{ secrets.SF_PASSWORD_DEV }}
+          SNOWFLAKE_PASSWORD: "amirmohammaD123!"
           SNOWFLAKE_ROLE: ${{ secrets.SF_ROLE }}
           SNOWFLAKE_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
-          SNOWFLAKE_DATABASE: DEV_RAW_BINARY
+          SNOWFLAKE_DATABASE: "DEV_RAW_BINARY"
         run: |
           echo "🚀 Deploying to $SNOWFLAKE_DATABASE"
           pip install schemachange
           
-          schemachange -f binary \
+          schemachange deploy -f binary \
             -c $SNOWFLAKE_DATABASE.SCHEMACHANGE.CHANGE_HISTORY \
             --create-change-history-table
           
