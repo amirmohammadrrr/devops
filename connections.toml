@@ -1,0 +1,37 @@
+###############################################
+# DEV CONNECTION
+###############################################
+[connections.dev]
+account   = "${SNOWFLAKE_ACCOUNT}"
+user      = "${SNOWFLAKE_USER}"
+password  = "${SNOWFLAKE_PASSWORD}"
+role      = "${SNOWFLAKE_ROLE}"
+warehouse = "${SNOWFLAKE_WAREHOUSE}"
+database  = "DEV_RAW_BINARY"
+schema    = "SCHEMACHANGE"
+
+
+###############################################
+# QA CONNECTION
+###############################################
+[connections.qa]
+account   = "${SNOWFLAKE_ACCOUNT}"
+user      = "${SNOWFLAKE_USER}"
+password  = "${SNOWFLAKE_PASSWORD}"
+role      = "${SNOWFLAKE_ROLE}"
+warehouse = "${SNOWFLAKE_WAREHOUSE}"
+database  = "QA_RAW_BINARY"
+schema    = "SCHEMACHANGE"
+
+
+###############################################
+# PROD CONNECTION
+###############################################
+[connections.prod]
+account   = "${SNOWFLAKE_ACCOUNT}"
+user      = "${SNOWFLAKE_USER}"
+password  = "${SNOWFLAKE_PASSWORD}"
+role      = "${SNOWFLAKE_ROLE}"
+warehouse = "${SNOWFLAKE_WAREHOUSE}"
+database  = "PROD_RAW_BINARY"
+schema    = "SCHEMACHANGE"
