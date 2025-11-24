@@ -1,5 +1,4 @@
 name: Deploy Binary Database
-
 on:
   push:
     branches:
@@ -14,78 +13,92 @@ on:
   workflow_dispatch:
 
 jobs:
-  ###########################################
-  # DEV (runs on any push NOT to main)
-  ###########################################
   deploy-dev:
     if: github.event_name == 'push' && github.ref != 'refs/heads/main'
     runs-on: ubuntu-latest
-    
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
         with:
           python-version: 3.8
-
+      
       - name: Deploy to DEV_RAW_BINARY
         env:
-          SNOWFLAKE_ACCOUNT:   ${{ secrets.SF_ACCOUNT_DEV }}
-          SNOWFLAKE_USER:      ${{ secrets.SF_USERNAME_DEV }}
-          SNOWFLAKE_PASSWORD:  ${{ secrets.SF_PASSWORD_DEV }}
-          SNOWFLAKE_ROLE:      ${{ secrets.SF_ROLE }}
+          SNOWFLAKE_ACCOUNT: ${{ secrets.SF_ACCOUNT_DEV }}
+          SNOWFLAKE_USER: ${{ secrets.SF_USERNAME_DEV }}
+          SNOWFLAKE_PASSWORD: ${{ secrets.SF_PASSWORD_DEV }}
+          SNOWFLAKE_ROLE: ${{ secrets.SF_ROLE }}
           SNOWFLAKE_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
+          SNOWFLAKE_DATABASE: DEV_RAW_BINARY
         run: |
+          echo "🚀 Deploying to $SNOWFLAKE_DATABASE"
+          # Debug - check what's set (password will be hidden)
+          echo "Account: $SNOWFLAKE_ACCOUNT"
+          echo "User: $SNOWFLAKE_USER"
+          echo "Role: $SNOWFLAKE_ROLE"
+          echo "Warehouse: $SNOWFLAKE_WAREHOUSE"
+          echo "Database: $SNOWFLAKE_DATABASE"
+          echo "Password set: $(if [ -z "$SNOWFLAKE_PASSWORD" ]; then echo 'NO'; else echo 'YES'; fi)"
+    
           pip install schemachange
-          schemachange deploy -f binary -c dev --create-change-history-table
-          echo "✅ Deployed to DEV"
+          
+          schemachange -f binary \
+            -c $SNOWFLAKE_DATABASE.SCHEMACHANGE.CHANGE_HISTORY \
+            --create-change-history-table
+          
+          echo "✅ Deployed to $SNOWFLAKE_DATABASE"
 
-  ###########################################
-  # QA (runs when a PR is opened against main)
-  ###########################################
   deploy-qa:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
         with:
           python-version: 3.8
-
+      
       - name: Deploy to QA_RAW_BINARY
         env:
-          SNOWFLAKE_ACCOUNT:   ${{ secrets.SF_ACCOUNT_DEV }}
-          SNOWFLAKE_USER:      ${{ secrets.SF_USERNAME_DEV }}
-          SNOWFLAKE_PASSWORD:  ${{ secrets.SF_PASSWORD_DEV }}
-          SNOWFLAKE_ROLE:      ${{ secrets.SF_ROLE }}
+          SNOWFLAKE_ACCOUNT: ${{ secrets.SF_ACCOUNT_DEV }}
+          SNOWFLAKE_USER: ${{ secrets.SF_USERNAME_DEV }}
+          SNOWFLAKE_PASSWORD: ${{ secrets.SF_PASSWORD_DEV }}
+          SNOWFLAKE_ROLE: ${{ secrets.SF_ROLE }}
           SNOWFLAKE_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
+          SNOWFLAKE_DATABASE: QA_RAW_BINARY
         run: |
+          echo "🧪 Deploying to $SNOWFLAKE_DATABASE"
           pip install schemachange
-          schemachange deploy -f binary -c qa --create-change-history-table
-          echo "🧪 Deployed to QA"
+          
+          schemachange -f binary \
+            -c $SNOWFLAKE_DATABASE.SCHEMACHANGE.CHANGE_HISTORY \
+            --create-change-history-table
+          
+          echo "✅ Deployed to $SNOWFLAKE_DATABASE"
 
-  ###########################################
-  # PROD (runs ONLY on push to main)
-  ###########################################
   deploy-prod:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment: PROD
-
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
         with:
           python-version: 3.8
-
+      
       - name: Deploy to PROD_RAW_BINARY
         env:
-          SNOWFLAKE_ACCOUNT:   ${{ secrets.SF_ACCOUNT_PROD }}
-          SNOWFLAKE_USER:      ${{ secrets.SF_USERNAME_PROD }}
-          SNOWFLAKE_PASSWORD:  ${{ secrets.SF_PASSWORD_PROD }}
-          SNOWFLAKE_ROLE:      ${{ secrets.SF_ROLE }}
+          SNOWFLAKE_ACCOUNT: ${{ secrets.SF_ACCOUNT_PROD }}
+          SNOWFLAKE_USER: ${{ secrets.SF_USERNAME_PROD }}
+          SNOWFLAKE_PASSWORD: ${{ secrets.SF_PASSWORD_PROD }}
+          SNOWFLAKE_ROLE: ${{ secrets.SF_ROLE }}
           SNOWFLAKE_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
+          SNOWFLAKE_DATABASE: PROD_RAW_BINARY
         run: |
+          echo "🚀 Deploying to $SNOWFLAKE_DATABASE"
           pip install schemachange
-          schemachange deploy -f binary -c prod --create-change-history-table
-          echo "🚀 Deployed to PROD"
+          
+          schemachange -f binary \
+            -c $SNOWFLAKE_DATABASE.SCHEMACHANGE.CHANGE_HISTORY \
+            --create-change-history-table
+          
+          echo "✅ Deployed to $SNOWFLAKE_DATABASE"
