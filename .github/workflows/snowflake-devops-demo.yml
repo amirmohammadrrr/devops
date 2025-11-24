@@ -1,5 +1,4 @@
 name: Deploy Binary Database
-
 on:
   push:
     branches:
@@ -25,21 +24,21 @@ jobs:
       
       - name: Deploy to DEV_RAW_BINARY
         env:
-          SNOWFLAKE_ACCOUNT: ${{ secrets.SF_ACCOUNT_DEV }}      # Changed: SF_ACCOUNT → SNOWFLAKE_ACCOUNT
-          SNOWFLAKE_USER: ${{ secrets.SF_USERNAME_DEV }}        # Changed: SF_USERNAME → SNOWFLAKE_USER
-          SNOWFLAKE_PASSWORD: ${{ secrets.SF_PASSWORD_DEV }}    # Changed: SF_PASSWORD → SNOWFLAKE_PASSWORD
-          SNOWFLAKE_ROLE: ${{ secrets.SF_ROLE }}                # Changed: SF_ROLE → SNOWFLAKE_ROLE
-          SNOWFLAKE_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}      # Changed: SF_WAREHOUSE → SNOWFLAKE_WAREHOUSE
-          SNOWFLAKE_DATABASE: DEV_RAW_BINARY                    # Changed: SF_DATABASE → SNOWFLAKE_DATABASE
+          SNOWFLAKE_ACCOUNT: ${{ secrets.SF_ACCOUNT_DEV }}
+          SNOWFLAKE_USER: ${{ secrets.SF_USERNAME_DEV }}
+          SNOWFLAKE_PASSWORD: ${{ secrets.SF_PASSWORD_DEV }}
+          SNOWFLAKE_ROLE: ${{ secrets.SF_ROLE }}
+          SNOWFLAKE_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
+          SNOWFLAKE_DATABASE: DEV_RAW_BINARY
         run: |
-          echo "🚀 Deploying to $SF_DATABASE"
+          echo "🚀 Deploying to $SNOWFLAKE_DATABASE"
           pip install schemachange
           
           schemachange -f binary \
-            -c $SNOWFLAKE_DATABASE.SCHEMACHANGE.CHANGE_HISTORY \   # Changed
+            -c $SNOWFLAKE_DATABASE.SCHEMACHANGE.CHANGE_HISTORY \
             --create-change-history-table
           
-          echo "✅ Deployed to $SF_DATABASE"
+          echo "✅ Deployed to $SNOWFLAKE_DATABASE"
 
   deploy-qa:
     if: github.event_name == 'pull_request'
@@ -59,14 +58,14 @@ jobs:
           SNOWFLAKE_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
           SNOWFLAKE_DATABASE: QA_RAW_BINARY
         run: |
-          echo "🧪 Deploying to $SF_DATABASE"
+          echo "🧪 Deploying to $SNOWFLAKE_DATABASE"
           pip install schemachange
           
           schemachange -f binary \
-            -c $SNOWFLAKE_DATABASE.SCHEMACHANGE.CHANGE_HISTORY \   # Changed
+            -c $SNOWFLAKE_DATABASE.SCHEMACHANGE.CHANGE_HISTORY \
             --create-change-history-table
           
-          echo "✅ Deployed to $SF_DATABASE"
+          echo "✅ Deployed to $SNOWFLAKE_DATABASE"
 
   deploy-prod:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -80,23 +79,18 @@ jobs:
       
       - name: Deploy to PROD_RAW_BINARY
         env:
-          SF_ACCOUNT: ${{ secrets.SF_ACCOUNT_PROD }}
-          SF_USERNAME: ${{ secrets.SF_USERNAME_PROD }}
-          SF_PASSWORD: ${{ secrets.SF_PASSWORD_PROD }}
-          SF_ROLE: ${{ secrets.SF_ROLE }}
-          SF_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
-          SF_DATABASE: PROD_RAW_BINARY  # ← Specific to this workflow
+          SNOWFLAKE_ACCOUNT: ${{ secrets.SF_ACCOUNT_PROD }}
+          SNOWFLAKE_USER: ${{ secrets.SF_USERNAME_PROD }}
+          SNOWFLAKE_PASSWORD: ${{ secrets.SF_PASSWORD_PROD }}
+          SNOWFLAKE_ROLE: ${{ secrets.SF_ROLE }}
+          SNOWFLAKE_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
+          SNOWFLAKE_DATABASE: PROD_RAW_BINARY
         run: |
-          echo "🚀 Deploying to $SF_DATABASE"
+          echo "🚀 Deploying to $SNOWFLAKE_DATABASE"
           pip install schemachange
           
           schemachange -f binary \
-            -a $SF_ACCOUNT \
-            -u $SF_USERNAME \
-            -r $SF_ROLE \
-            -w $SF_WAREHOUSE \
-            -d $SF_DATABASE \
-            -c $SF_DATABASE.SCHEMACHANGE.CHANGE_HISTORY \
+            -c $SNOWFLAKE_DATABASE.SCHEMACHANGE.CHANGE_HISTORY \
             --create-change-history-table
           
-          echo "✅ Deployed to $SF_DATABASE"
+          echo "✅ Deployed to $SNOWFLAKE_DATABASE"
