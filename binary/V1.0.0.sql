@@ -1,2 +1,2 @@
 -- create datbase
-create datbase if not exists {{SF_DATABASE}};
+create database if not exists {{SNOWFLAKE_DATABASE}};
